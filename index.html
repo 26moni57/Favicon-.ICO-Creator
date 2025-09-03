@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Favicon & .ICO Creator – Offline</title>
+  <style>
+    :root{
+      --bg:#0b1020; --card:#121832; --muted:#99a3b3; --text:#eef1f7; --accent:#7c9cff; --ok:#1ec28b; --warn:#ffcf5b; --err:#ff6b6b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(circle at 20% 0%,#11183a,#0b1020 70%);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;color:var(--text)}
+    header{padding:24px 16px;text-align:center}
+    h1{margin:0 0 6px;font-size:clamp(22px,3.5vw,34px)}
+    p.sub{margin:0;color:var(--muted)}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
+
+    .uploader{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+    @media (max-width:900px){.uploader{grid-template-columns:1fr}} 
+
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .pad{padding:18px}
+
+    .drop{display:flex;align-items:center;justify-content:center;min-height:200px;border:2px dashed rgba(255,255,255,.2);border-radius:14px;cursor:pointer;transition:.2s}
+    .drop:hover{border-color:var(--accent);background:rgba(124,156,255,.05)}
+    .drop input{display:none}
+    .drop span{opacity:.85}
+
+    .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+    .opt{background:#0e1430;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px}
+    .opt label{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text)}
+    .opt small{display:block;color:var(--muted)}
+
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    button{appearance:none;border:0;background:var(--accent);color:#08102a;font-weight:700;padding:12px 14px;border-radius:12px;cursor:pointer}
+    button.secondary{background:#202a4e;color:var(--text)}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:var(--text)}
+    button:disabled{opacity:.5;cursor:not-allowed}
+
+    .preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:14px}
+    .tile{background:#0e1430;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;text-align:center}
+    .tile canvas{width:64px;height:64px;image-rendering:pixelated}
+    .tile b{display:block;margin-top:8px;font-size:13px}
+    .tile small{color:var(--muted)}
+
+    .footer{opacity:.7;text-align:center;padding:20px}
+    .note{font-size:13px;color:var(--muted)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .lang{margin-left:auto}
+    select{background:#0e1430;color:var(--text);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:8px}
+    a.link{color:var(--accent)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Favicon & .ICO Creator</h1>
+    <p class="sub">Drag & drop any PNG/JPG/SVG → get a multi‑size <code>.ico</code> (16–256px). Works 100% offline.</p>
+    <p class="sub">বাংলা সাপোর্ট: নিচের নির্দেশনা দেখুন — ছবি দিন, সাইজ বাছুন, তারপর <b>Download .ico</b> ক্লিক করুন।</p>
+  </header>
+
+  <div class="wrap">
+    <div class="uploader">
+      <div class="card pad">
+        <label class="row" for="fileInput">
+          <div><b>1) Upload Image</b> <span class="note">PNG/JPG/SVG • square works best</span></div>
+          <div class="lang">
+            <select id="sizePreset">
+              <option value="all" selected>Sizes: 16, 32, 48, 64, 128, 256</option>
+              <option value="favicon">Favicon: 16, 32, 48</option>
+              <option value="win">Windows App: 16, 32, 48, 256</option>
+              <option value="custom">Custom (tick below)</option>
+            </select>
+          </div>
+        </label>
+        <label class="drop" id="drop">
+          <input id="fileInput" type="file" accept="image/*,image/svg+xml" />
+          <span>Click or Drop an image here</span>
+        </label>
+
+        <div class="opts" id="sizeOptions"></div>
+
+        <div class="actions">
+          <button id="btnIco" disabled>Download .ico</button>
+          <button id="btnPngs" class="secondary" disabled>Download PNG set (.zip)</button>
+          <button id="btnClear" class="ghost">Clear</button>
+        </div>
+        <p class="note" style="margin-top:10px">Tip: For PyInstaller icons use a real <code>.ico</code> file. This tool packs PNGs inside ICO for crisp results.</p>
+      </div>
+
+      <div class="card pad">
+        <b>2) Preview</b>
+        <div id="preview" class="preview" style="margin-top:10px"></div>
+        <p class="note" style="margin-top:10px">Windows shows the best quality when 256×256 is included. Browsers typically use 16–48 for tab favicons.</p>
+      </div>
+    </div>
+
+    <div class="card pad" style="margin-top:16px">
+      <b>How it works</b>
+      <p class="note">We resize your image in your browser and build a valid ICO file containing PNG entries (16–256px). Nothing gets uploaded.</p>
+      <details>
+        <summary>বাংলা নির্দেশনা</summary>
+        <ol class="note">
+          <li>ছবি (PNG/JPG/SVG) ড্রপ বা সিলেক্ট করুন।</li>
+          <li>সাইজ প্রিসেট থেকে বাছুন (যেমন Windows App)।</li>
+          <li>প্রিভিউ দেখুন, তারপর <b>Download .ico</b> চাপুন।</li>
+        </ol>
+      </details>
+    </div>
+
+    <div class="footer note">
+      Made for offline use • No tracking • Single‑file app.
+    </div>
+  </div>
+
+  <script>
+  // ---------- Utilities ----------
+  const SIZES_ALL = [16,32,48,64,128,256];
+  const SIZES_FAV = [16,32,48];
+  const SIZES_WIN = [16,32,48,256];
+
+  const el = id => document.getElementById(id);
+  const fileInput = el('fileInput');
+  const drop = el('drop');
+  const sizeOptions = el('sizeOptions');
+  const sizePreset = el('sizePreset');
+  const preview = el('preview');
+  const btnIco = el('btnIco');
+  const btnPngs = el('btnPngs');
+  const btnClear = el('btnClear');
+
+  let currentImage = null; // HTMLImageElement or SVG rendered to bitmap
+  let selectedSizes = new Set(SIZES_ALL);
+
+  function setPreset(v){
+    sizeOptions.innerHTML = '';
+    let arr = SIZES_ALL;
+    if(v==='favicon') arr=SIZES_FAV;
+    else if(v==='win') arr=SIZES_WIN;
+    // For custom, start empty so user selects
+    selectedSizes = new Set(v==='custom'?[]:arr);
+    const toShow = [...SIZES_ALL];
+    toShow.forEach(sz=>{
+      const wrap = document.createElement('div');
+      wrap.className = 'opt';
+      const id = 'sz_'+sz;
+      wrap.innerHTML = `<label><input type="checkbox" id="${id}" ${selectedSizes.has(sz)?'checked':''}/> <b>${sz}×${sz}</b></label><small>Recommended</small>`;
+      sizeOptions.appendChild(wrap);
+      wrap.querySelector('input').addEventListener('change', (e)=>{
+        if(e.target.checked) selectedSizes.add(sz); else selectedSizes.delete(sz);
+      });
+    });
+  }
+  setPreset('all');
+  sizePreset.addEventListener('change', e=> setPreset(e.target.value));
+
+  // Handle drop/click
+  drop.addEventListener('click', ()=> fileInput.click());
+  ;['dragenter','dragover'].forEach(ev=> drop.addEventListener(ev, e=>{e.preventDefault(); drop.classList.add('hover')}));
+  ;['dragleave','drop'].forEach(ev=> drop.addEventListener(ev, e=>{e.preventDefault(); drop.classList.remove('hover')}));
+  drop.addEventListener('drop', e=> handleFiles(e.dataTransfer.files));
+  fileInput.addEventListener('change', e=> handleFiles(e.target.files));
+
+  function handleFiles(files){
+    const f = files && files[0];
+    if(!f) return;
+    if(f.type.includes('svg')){
+      const reader = new FileReader();
+      reader.onload = async ()=>{
+        const svgText = reader.result;
+        // Render SVG to canvas by creating an image with data URL
+        const img = new Image();
+        img.onload = ()=>{ currentImage = img; refreshPreview(); };
+        img.onerror = ()=> alert('Failed to load SVG');
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
+      };
+      reader.readAsText(f);
+    } else {
+      const url = URL.createObjectURL(f);
+      const img = new Image();
+      img.onload = ()=>{ currentImage = img; refreshPreview(); URL.revokeObjectURL(url); };
+      img.onerror = ()=> alert('Failed to load image');
+      img.src = url;
+    }
+  }
+
+  function drawToCanvas(img, size){
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const ctx = c.getContext('2d');
+    // Cover fit (center-crop) to keep icon balanced
+    const minSide = Math.min(img.naturalWidth || img.width, img.naturalHeight || img.height);
+    const sx = ((img.naturalWidth || img.width) - minSide)/2;
+    const sy = ((img.naturalHeight || img.height) - minSide)/2;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+    return c;
+  }
+
+  async function canvasToPNGBlob(canvas){
+    return await new Promise(res=> canvas.toBlob(res, 'image/png'));
+  }
+
+  function refreshPreview(){
+    preview.innerHTML='';
+    if(!currentImage){ btnIco.disabled = btnPngs.disabled = true; return; }
+    const sizes = [...selectedSizes].sort((a,b)=>a-b);
+    sizes.forEach(sz=>{
+      const c = drawToCanvas(currentImage, sz);
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      tile.appendChild(c);
+      const b = document.createElement('b'); b.textContent = sz+'×'+sz; tile.appendChild(b);
+      const s = document.createElement('small'); s.textContent = 'preview'; tile.appendChild(s);
+      preview.appendChild(tile);
+    });
+    btnIco.disabled = sizes.length===0;
+    btnPngs.disabled = sizes.length===0;
+  }
+
+  // ---------- ICO builder (PNG-based) ----------
+  // Builds a .ico file that stores PNG data for each selected size.
+  async function buildICO(img, sizes){
+    // Prepare PNG blobs
+    const entries = [];
+    for(const sz of sizes){
+      const c = drawToCanvas(img, sz);
+      const blob = await canvasToPNGBlob(c);
+      const arrayBuf = await blob.arrayBuffer();
+      entries.push({ size: sz, data: new Uint8Array(arrayBuf) });
+    }
+    // ICO header: 6 bytes
+    const count = entries.length;
+    const dirSize = 6 + count * 16;
+    // Compute total size
+    let total = dirSize;
+    for(const e of entries) total += e.data.length;
+    const out = new Uint8Array(total);
+    let dv = new DataView(out.buffer);
+    let off = 0;
+    // ICONDIR
+    dv.setUint16(off, 0, true); off+=2; // reserved
+    dv.setUint16(off, 1, true); off+=2; // type = 1 (icon)
+    dv.setUint16(off, count, true); off+=2; // count
+
+    // Directory entries (we'll fill, then append data)
+    let dataOffset = dirSize;
+    for(const e of entries){
+      const w = e.size === 256 ? 0 : e.size; // 0 means 256 in ICO
+      const h = e.size === 256 ? 0 : e.size;
+      out[off++] = w;           // width (1 byte)
+      out[off++] = h;           // height (1 byte)
+      out[off++] = 0;           // color count
+      out[off++] = 0;           // reserved
+      dv.setUint16(off, 1, true); off+=2; // planes (set 1)
+      dv.setUint16(off, 32, true); off+=2; // bit count (32bpp)
+      dv.setUint32(off, e.data.length, true); off+=4; // bytes in resource
+      dv.setUint32(off, dataOffset, true); off+=4;    // image offset
+      dataOffset += e.data.length;
+    }
+    // Append image data
+    let cursor = dirSize;
+    for(const e of entries){
+      out.set(e.data, cursor);
+      cursor += e.data.length;
+    }
+    return new Blob([out], {type:'image/x-icon'});
+  }
+
+  // ---------- ZIP (PNG set) ----------
+  async function buildZip(img, sizes){
+    // Tiny ZIP builder for store (no compression). Good enough for small PNGs.
+    // If you prefer compression, replace with JSZip — but this file is intentionally dependency‑free.
+    const files = [];
+    let offset = 0; const enc = new TextEncoder();
+
+    function crc32(u8){
+      // Minimal CRC32
+      let c = ~0, l = u8.length;
+      for(let i=0;i<l;i++){
+        c ^= u8[i];
+        for(let k=0;k<8;k++) c = (c>>>1) ^ (0xEDB88320 & -(c&1));
+      }
+      return ~c >>> 0;
+    }
+
+    for(const sz of sizes){
+      const c = drawToCanvas(img, sz);
+      const blob = await canvasToPNGBlob(c);
+      const data = new Uint8Array(await blob.arrayBuffer());
+      const name = `favicon-${sz}.png`;
+      const nameBytes = enc.encode(name);
+      const crc = crc32(data);
+      const local = new Uint8Array(30 + nameBytes.length + data.length);
+      let dv = new DataView(local.buffer);
+      let p=0;
+      dv.setUint32(p, 0x04034b50, true); p+=4; // local file header sig
+      dv.setUint16(p, 20, true); p+=2; // ver needed
+      dv.setUint16(p, 0, true); p+=2;  // flags
+      dv.setUint16(p, 0, true); p+=2;  // method (store)
+      dv.setUint16(p, 0, true); p+=2;  // time
+      dv.setUint16(p, 0, true); p+=2;  // date
+      dv.setUint32(p, crc, true); p+=4; // crc
+      dv.setUint32(p, data.length, true); p+=4; // comp size
+      dv.setUint32(p, data.length, true); p+=4; // uncomp size
+      dv.setUint16(p, nameBytes.length, true); p+=2; // name len
+      dv.setUint16(p, 0, true); p+=2; // extra len
+      local.set(nameBytes, p); p += nameBytes.length;
+      local.set(data, p);
+
+      files.push({name, nameBytes, crc, size:data.length, offset, local});
+      offset += local.length;
+    }
+
+    // Central directory
+    let cdSize = 0;
+    for(const f of files){ cdSize += 46 + f.nameBytes.length; }
+    const out = new Uint8Array(offset + cdSize + 22);
+    let pos = 0; out.set(files[0]?.local || new Uint8Array(), pos); // start with first
+    pos += files[0]?.local.length || 0;
+    for(let i=1;i<files.length;i++){ out.set(files[i].local, pos); pos += files[i].local.length; }
+
+    for(const f of files){
+      const cd = new Uint8Array(46 + f.nameBytes.length); let dv = new DataView(cd.buffer); let p=0;
+      dv.setUint32(p, 0x02014b50, true); p+=4; // central dir sig
+      dv.setUint16(p, 20, true); p+=2; // ver made by
+      dv.setUint16(p, 20, true); p+=2; // ver needed
+      dv.setUint16(p, 0, true); p+=2; // flags
+      dv.setUint16(p, 0, true); p+=2; // method
+      dv.setUint16(p, 0, true); p+=2; // time
+      dv.setUint16(p, 0, true); p+=2; // date
+      dv.setUint32(p, f.crc, true); p+=4;
+      dv.setUint32(p, f.size, true); p+=4;
+      dv.setUint32(p, f.size, true); p+=4;
+      dv.setUint16(p, f.nameBytes.length, true); p+=2;
+      dv.setUint16(p, 0, true); p+=2; // extra len
+      dv.setUint16(p, 0, true); p+=2; // comment len
+      dv.setUint16(p, 0, true); p+=2; // disk number
+      dv.setUint16(p, 0, true); p+=2; // internal attr
+      dv.setUint32(p, 0, true); p+=4; // external attr
+      dv.setUint32(p, f.offset, true); p+=4; // relative offset
+      cd.set(f.nameBytes, p);
+      out.set(cd, pos); pos += cd.length;
+    }
+
+    // End of central directory record
+    let dvEnd = new DataView(out.buffer);
+    dvEnd.setUint32(pos, 0x06054b50, true); pos+=4; // end sig
+    dvEnd.setUint16(pos, 0, true); pos+=2; // disk
+    dvEnd.setUint16(pos, 0, true); pos+=2; // start disk
+    dvEnd.setUint16(pos, files.length, true); pos+=2; // total entries this disk
+    dvEnd.setUint16(pos, files.length, true); pos+=2; // total entries
+    dvEnd.setUint32(pos, cdSize, true); pos+=4; // size of central dir
+    dvEnd.setUint32(pos, offset, true); pos+=4; // offset of central dir
+    dvEnd.setUint16(pos, 0, true); pos+=2; // comment len
+
+    return new Blob([out], {type:'application/zip'});
+  }
+
+  // ---------- Actions ----------
+  btnIco.addEventListener('click', async ()=>{
+    if(!currentImage || selectedSizes.size===0) return;
+    const sizes = [...selectedSizes].sort((a,b)=>a-b);
+    const blob = await buildICO(currentImage, sizes);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'icon.ico'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  });
+
+  btnPngs.addEventListener('click', async ()=>{
+    if(!currentImage || selectedSizes.size===0) return;
+    const sizes = [...selectedSizes].sort((a,b)=>a-b);
+    const blob = await buildZip(currentImage, sizes);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'favicons.zip'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  });
+
+  btnClear.addEventListener('click', ()=>{
+    fileInput.value = '';
+    currentImage = null; preview.innerHTML='';
+    btnIco.disabled = btnPngs.disabled = true;
+  });
+  </script>
+</body>
+</html>
